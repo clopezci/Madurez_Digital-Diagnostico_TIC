@@ -37,7 +37,7 @@ export default function ConsentimientoModal({ onAceptar, onCancelar }: Props) {
               <strong className="text-gray-800">¿Compartimos tus datos?</strong> Los datos individuales de tu empresa <strong>nunca se comparten</strong> con terceros. Los benchmarks usan únicamente datos anonimizados y agregados.
             </p>
             <p>
-              <strong className="text-gray-800">¿Dónde se almacenan?</strong> En esta versión MVP, los datos se almacenan localmente en tu dispositivo (localStorage). No se envían a servidores externos.
+              <strong className="text-gray-800">¿Dónde se almacenan?</strong> Los datos se almacenan de forma segura en la nube (Supabase / AWS) con cifrado en tránsito y en reposo. Cada usuario accede únicamente a sus propios datos.
             </p>
             <p>
               <strong className="text-gray-800">Tus derechos (Habeas Data):</strong> Puedes conocer, actualizar, rectificar o eliminar tu información en cualquier momento desde el historial de diagnósticos.

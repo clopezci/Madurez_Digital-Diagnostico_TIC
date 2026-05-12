@@ -51,7 +51,7 @@ export default function Header() {
               </Link>
             )}
             <div className="w-px h-6 bg-gray-200 mx-1" />
-            <span className="text-sm text-gray-500 hidden sm:block px-2">{usuario.nombre}</span>
+            <Link href="/perfil" className="text-sm text-gray-500 hidden sm:block px-2 hover:text-gray-800 transition-colors">{usuario.nombre}</Link>
             <button
               onClick={handleLogout}
               className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors"

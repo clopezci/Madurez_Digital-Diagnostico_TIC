@@ -84,7 +84,11 @@ function calcularPreguntaGlobal(dimIndex: number, pregIndex: number): number {
   return count + pregIndex;
 }
 
-export default function CuestionarioWizard() {
+interface Props {
+  modoDemo?: boolean;
+}
+
+export default function CuestionarioWizard({ modoDemo = false }: Props) {
   const router = useRouter();
   const [state, dispatch] = useReducer(reducer, {
     paso: { tipo: 'empresa' },
@@ -99,11 +103,16 @@ export default function CuestionarioWizard() {
     let cancelled = false;
     const timer = setTimeout(async () => {
       const resultado = procesarDiagnostico(state.empresa!, state.respuestas);
-      await guardarDiagnostico(resultado);
-      if (!cancelled) router.push(`/resultados/${resultado.id}`);
+      if (modoDemo) {
+        sessionStorage.setItem('demo_resultado', JSON.stringify(resultado));
+        if (!cancelled) router.push('/resultados/demo');
+      } else {
+        await guardarDiagnostico(resultado);
+        if (!cancelled) router.push(`/resultados/${resultado.id}`);
+      }
     }, 1500);
     return () => { cancelled = true; clearTimeout(timer); };
-  }, [state.paso.tipo, state.empresa, state.respuestas, router]);
+  }, [state.paso.tipo, state.empresa, state.respuestas, router, modoDemo]);
 
   if (state.paso.tipo === 'empresa') {
     return (

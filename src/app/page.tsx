@@ -70,8 +70,13 @@ export default function LandingPage() {
               Ya tengo cuenta
             </Link>
           </div>
-          <p className="mt-5 text-sm text-gray-400">
+          <p className="mt-4 text-sm text-gray-400">
             Sin tarjeta de crédito · 100% gratuito · Datos protegidos bajo Ley 1581/2012
+          </p>
+          <p className="mt-2">
+            <Link href="/demo" className="text-sm text-indigo-500 hover:text-indigo-700 hover:underline transition-colors">
+              ¿Quieres ver cómo funciona? → Probar sin crear cuenta
+            </Link>
           </p>
         </div>
 
