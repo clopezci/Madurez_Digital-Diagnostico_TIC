@@ -5,7 +5,7 @@
  *  - localStorage (fallback para desarrollo sin Supabase)
  */
 import { supabase, isSupabaseEnabled } from './supabase';
-import type { DiagnosticoResultado, Usuario } from '@/types';
+import type { DiagnosticoResultado, Usuario, BenchmarkDatos } from '@/types';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -212,6 +212,40 @@ export async function eliminarDiagnostico(id: string): Promise<void> {
   if (!isBrowser()) return;
   const todos = (await getDiagnosticos()).filter(d => d.id !== id);
   localStorage.setItem(LS.diagnosticos, JSON.stringify(todos));
+}
+
+// ─── BENCHMARK REAL ──────────────────────────────────────────────────────────
+
+export async function getBenchmarkReal(
+  sector: string,
+  tamanio: string,
+): Promise<BenchmarkDatos | null> {
+  if (!isSupabaseEnabled || !supabase) return null;
+
+  const { data, error } = await supabase
+    .from('benchmark_anonimo')
+    .select('*')
+    .eq('sector', sector)
+    .eq('tamanio', tamanio)
+    .single();
+
+  if (error || !data) return null;
+
+  const row = data as Record<string, unknown>;
+  return {
+    sector,
+    tamanio,
+    promedioGlobal: Number(row.promedio_global ?? 0),
+    nEmpresas:      Number(row.n_empresas ?? 0),
+    etiqueta:       `Benchmark real · ${sector.replace(/_/g, ' ')} · ${tamanio} (${row.n_empresas} empresas)`,
+    promedioPorDimension: {
+      estrategia: Number(row.promedio_estrategia ?? 0),
+      tecnologia: Number(row.promedio_tecnologia ?? 0),
+      datos:      Number(row.promedio_datos      ?? 0),
+      talento:    Number(row.promedio_talento    ?? 0),
+      cliente:    Number(row.promedio_cliente    ?? 0),
+    },
+  };
 }
 
 // ─── helpers privados ─────────────────────────────────────────────────────────

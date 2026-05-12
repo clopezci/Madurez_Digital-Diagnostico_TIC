@@ -12,6 +12,7 @@ import BarraDimensiones from '@/components/dashboard/BarraDimensiones';
 import Recomendaciones from '@/components/dashboard/Recomendaciones';
 import Ruta90Dias from '@/components/dashboard/Ruta90Dias';
 import BenchmarkCard from '@/components/dashboard/BenchmarkCard';
+import CubiertaPDF from '@/components/dashboard/CubiertaPDF';
 import { Loader2, Printer, ClipboardList, ArrowLeft, Building2 } from 'lucide-react';
 
 export default function ResultadosPage() {
@@ -61,11 +62,8 @@ export default function ResultadosPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      {/* Print header (only visible when printing) */}
-      <div className="hidden print:block p-6 border-b text-center">
-        <h1 className="text-2xl font-bold">Diagnóstico de Madurez Digital</h1>
-        <p className="text-gray-500">{empresa.nombre} · {formatFecha(resultado.fecha)}</p>
-      </div>
+      {/* Portada PDF (solo visible al imprimir) */}
+      <CubiertaPDF resultado={resultado} />
 
       <main className="max-w-6xl mx-auto px-4 py-8" id="resultado-print">
         {/* Toolbar */}

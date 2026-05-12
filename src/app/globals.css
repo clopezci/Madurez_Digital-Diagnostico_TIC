@@ -31,9 +31,44 @@
   }
 }
 
-/* Print styles for PDF export */
+/* ─── PDF / Print styles ─────────────────────────────────────────────────── */
 @media print {
-  .no-print { display: none !important; }
-  body { background: white !important; }
-  .card { box-shadow: none !important; border: 1px solid #e5e7eb !important; }
+  .no-print      { display: none !important; }
+  body           { background: white !important; font-family: 'Inter', sans-serif; }
+  .card          { box-shadow: none !important; border: 1px solid #e5e7eb !important; break-inside: avoid; }
+  header         { display: none !important; }
+  main           { padding-top: 0 !important; }
+
+  /* Forzar salto de página antes del contenido principal */
+  #resultado-print { page-break-before: always; }
+
+  /* Evitar cortes dentro de secciones clave */
+  .card, section  { page-break-inside: avoid; }
 }
+
+/* Portada PDF */
+.pdf-portada       { font-family: 'Inter', sans-serif; color: #111827; page-break-after: always; min-height: 100vh; display: flex; flex-direction: column; }
+.pdf-header        { padding: 28px 40px; color: white; }
+.pdf-header-inner  { display: flex; justify-content: space-between; align-items: flex-end; }
+.pdf-brand         { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.pdf-subtitle      { font-size: 11px; margin-top: 4px; opacity: 0.9; }
+.pdf-cover-body    { flex: 1; padding: 40px; }
+.pdf-report-label  { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #6366f1; text-transform: uppercase; margin-bottom: 8px; }
+.pdf-cover-title   { font-size: 32px; font-weight: 800; color: #111827; margin-bottom: 32px; }
+.pdf-score-badge   { display: inline-flex; flex-direction: column; align-items: center; border: 3px solid; border-radius: 20px; padding: 20px 40px; margin-bottom: 32px; }
+.pdf-score-number  { font-size: 64px; font-weight: 900; line-height: 1; }
+.pdf-score-label   { font-size: 13px; color: #6b7280; margin-top: 4px; }
+.pdf-score-nivel   { font-size: 12px; font-weight: 700; padding: 4px 14px; border-radius: 20px; margin-top: 10px; }
+.pdf-empresa-box   { border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 32px; }
+.pdf-empresa-row   { display: flex; gap: 12px; padding: 6px 0; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+.pdf-empresa-row:last-child { border-bottom: none; }
+.pdf-empresa-key   { width: 140px; color: #6b7280; flex-shrink: 0; }
+.pdf-empresa-val   { font-weight: 600; color: #111827; }
+.pdf-dims          { }
+.pdf-dims-title    { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 12px; }
+.pdf-dim-row       { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.pdf-dim-name      { width: 160px; font-size: 12px; color: #374151; flex-shrink: 0; }
+.pdf-dim-bar-bg    { flex: 1; height: 8px; background: #f3f4f6; border-radius: 4px; overflow: hidden; }
+.pdf-dim-bar-fill  { height: 100%; border-radius: 4px; }
+.pdf-dim-val       { width: 30px; font-size: 12px; font-weight: 700; text-align: right; flex-shrink: 0; }
+.pdf-footer        { padding: 16px 40px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #9ca3af; text-align: center; }

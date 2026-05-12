@@ -1,15 +1,29 @@
 'use client';
-import type { DiagnosticoResultado } from '@/types';
+import { useEffect, useState } from 'react';
+import type { DiagnosticoResultado, BenchmarkDatos } from '@/types';
 import { DIMENSIONES } from '@/data/preguntas';
+import { getBenchmarkReal } from '@/lib/storage';
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, Database, FlaskConical } from 'lucide-react';
 
 interface Props {
   resultado: DiagnosticoResultado;
 }
 
 export default function BenchmarkCard({ resultado }: Props) {
-  const { benchmark, resultados, puntajeGlobal } = resultado;
+  const { benchmark: benchmarkSimulado, resultados, puntajeGlobal, empresa } = resultado;
+  const [benchmark, setBenchmark] = useState<BenchmarkDatos>(benchmarkSimulado);
+  const [esReal, setEsReal] = useState(false);
+
+  useEffect(() => {
+    getBenchmarkReal(empresa.sector, empresa.tamanio).then(real => {
+      if (real && real.nEmpresas >= 3) {
+        setBenchmark(real);
+        setEsReal(true);
+      }
+    });
+  }, [empresa.sector, empresa.tamanio]);
+
   const difGlobal = puntajeGlobal - benchmark.promedioGlobal;
 
   return (
@@ -19,31 +33,40 @@ export default function BenchmarkCard({ resultado }: Props) {
           <h3 className="font-bold text-gray-900">Benchmark Sectorial</h3>
           <p className="text-xs text-gray-500">{benchmark.etiqueta}</p>
         </div>
-        <div className="text-right">
-          <p className="text-xs text-gray-400">n = {benchmark.nEmpresas} empresas (datos simulados)</p>
+        <div className="flex items-center gap-2">
+          <span className={cn(
+            'inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full',
+            esReal
+              ? 'bg-emerald-100 text-emerald-700'
+              : 'bg-amber-100 text-amber-700'
+          )}>
+            {esReal
+              ? <><Database className="w-3 h-3" /> Datos reales · n={benchmark.nEmpresas}</>
+              : <><FlaskConical className="w-3 h-3" /> Datos simulados · n={benchmark.nEmpresas}</>
+            }
+          </span>
         </div>
       </div>
 
       {/* Global comparison */}
       <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl mb-4">
         <div>
-          <p className="text-xs text-gray-500 mb-0.5">Puntaje global · Mi empresa</p>
+          <p className="text-xs text-gray-500 mb-0.5">Mi empresa</p>
           <p className="text-3xl font-extrabold text-indigo-600">{puntajeGlobal}</p>
         </div>
         <div className="text-center">
-          <div
-            className={cn(
-              'flex items-center gap-1 text-sm font-bold px-3 py-1.5 rounded-full',
-              difGlobal > 0 ? 'bg-emerald-100 text-emerald-700' : difGlobal < 0 ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'
-            )}
-          >
-            {difGlobal > 0 ? (
-              <><TrendingUp className="w-4 h-4" /> +{difGlobal} pts</>
-            ) : difGlobal < 0 ? (
-              <><TrendingDown className="w-4 h-4" /> {difGlobal} pts</>
-            ) : (
-              <><Minus className="w-4 h-4" /> En la media</>
-            )}
+          <div className={cn(
+            'flex items-center gap-1 text-sm font-bold px-3 py-1.5 rounded-full',
+            difGlobal > 0 ? 'bg-emerald-100 text-emerald-700'
+              : difGlobal < 0 ? 'bg-red-100 text-red-700'
+              : 'bg-gray-100 text-gray-600'
+          )}>
+            {difGlobal > 0
+              ? <><TrendingUp className="w-4 h-4" />+{difGlobal} pts</>
+              : difGlobal < 0
+              ? <><TrendingDown className="w-4 h-4" />{difGlobal} pts</>
+              : <><Minus className="w-4 h-4" />En la media</>
+            }
           </div>
           <p className="text-xs text-gray-400 mt-1">vs promedio {benchmark.promedioGlobal}</p>
         </div>
@@ -61,7 +84,9 @@ export default function BenchmarkCard({ resultado }: Props) {
           const dim = DIMENSIONES.find(d => d.id === r.dimensionId);
           return (
             <div key={r.dimensionId} className="flex items-center gap-3">
-              <span className="text-xs text-gray-600 w-32 truncate">{r.nombre.split(' ').slice(0, 2).join(' ')}</span>
+              <span className="text-xs text-gray-600 w-32 truncate">
+                {r.nombre.split(' ').slice(0, 2).join(' ')}
+              </span>
               <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden relative">
                 <div
                   className="h-full rounded-full transition-all"
@@ -75,12 +100,10 @@ export default function BenchmarkCard({ resultado }: Props) {
               </div>
               <div className="flex items-center gap-1.5 w-24 justify-end">
                 <span className="text-xs font-bold text-gray-800">{r.puntaje}</span>
-                <span
-                  className={cn(
-                    'text-xs font-medium',
-                    dif > 0 ? 'text-emerald-600' : dif < 0 ? 'text-red-500' : 'text-gray-400'
-                  )}
-                >
+                <span className={cn(
+                  'text-xs font-medium',
+                  dif > 0 ? 'text-emerald-600' : dif < 0 ? 'text-red-500' : 'text-gray-400'
+                )}>
                   ({dif > 0 ? '+' : ''}{dif})
                 </span>
               </div>
