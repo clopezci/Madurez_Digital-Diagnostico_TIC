@@ -15,7 +15,7 @@ import {
 import { Loader2, Users, ClipboardList, BarChart3, TrendingUp, ShieldAlert } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const ADMIN_EMAIL = 'clpezci@gmail.com';
+const ADMIN_EMAILS = ['clpezci@gmail.com', 'clopezci@hotmail.com'];
 
 const NIVEL_ORDER = ['Inicial', 'Explorando', 'Definido', 'Optimizando', 'Transformador'];
 const DIM_LABELS: Record<string, string> = {
@@ -61,7 +61,7 @@ export default function AdminPage() {
   useEffect(() => {
     if (loading) return;
     if (!usuario) { router.replace('/login'); return; }
-    if (usuario.email !== ADMIN_EMAIL) { router.replace('/'); return; }
+    if (!ADMIN_EMAILS.includes(usuario.email)) { router.replace('/'); return; }
 
     Promise.all([
       getAdminStats(),

@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { BarChart3, LogOut, History, ClipboardList, ShieldCheck } from 'lucide-react';
 
-const ADMIN_EMAIL = 'clpezci@gmail.com';
+const ADMIN_EMAILS = ['clpezci@gmail.com', 'clopezci@hotmail.com'];
 
 export default function Header() {
   const { usuario, logout } = useAuth();
@@ -41,7 +41,7 @@ export default function Header() {
               <History className="w-4 h-4" />
               <span className="hidden sm:inline">Historial</span>
             </Link>
-            {usuario.email === ADMIN_EMAIL && (
+            {ADMIN_EMAILS.includes(usuario.email) && (
               <Link
                 href="/admin"
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-indigo-600 hover:bg-indigo-50 transition-colors"

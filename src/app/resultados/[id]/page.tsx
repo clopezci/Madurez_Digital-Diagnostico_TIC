@@ -139,7 +139,7 @@ export default function ResultadosPage() {
 
         {/* Recommendations */}
         <div className="mb-6">
-          <Recomendaciones recomendaciones={resultado.recomendaciones} />
+          <Recomendaciones recomendaciones={resultado.recomendaciones} resultado={resultado} />
         </div>
 
         {/* 90-day plan */}
