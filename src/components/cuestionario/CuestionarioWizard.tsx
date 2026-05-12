@@ -96,12 +96,13 @@ export default function CuestionarioWizard() {
   // Handle 'procesando' step via effect to avoid setState-in-render
   useEffect(() => {
     if (state.paso.tipo !== 'procesando') return;
-    const timer = setTimeout(() => {
+    let cancelled = false;
+    const timer = setTimeout(async () => {
       const resultado = procesarDiagnostico(state.empresa!, state.respuestas);
-      guardarDiagnostico(resultado);
-      router.push(`/resultados/${resultado.id}`);
+      await guardarDiagnostico(resultado);
+      if (!cancelled) router.push(`/resultados/${resultado.id}`);
     }, 1500);
-    return () => clearTimeout(timer);
+    return () => { cancelled = true; clearTimeout(timer); };
   }, [state.paso.tipo, state.empresa, state.respuestas, router]);
 
   if (state.paso.tipo === 'empresa') {

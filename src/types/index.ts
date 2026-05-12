@@ -82,10 +82,10 @@ export interface DiagnosticoResultado {
   benchmark: BenchmarkDatos;
 }
 
+// Usuario: ya no guarda passwordHash (Supabase Auth lo maneja)
 export interface Usuario {
   id: string;
   email: string;
   nombre: string;
   createdAt: string;
-  passwordHash: string;
 }

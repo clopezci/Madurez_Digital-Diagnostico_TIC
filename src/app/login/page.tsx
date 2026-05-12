@@ -18,11 +18,11 @@ export default function LoginPage() {
     if (usuario) router.replace('/diagnostico');
   }, [usuario, router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    const result = iniciarSesion(form.email, form.password);
+    const result = await iniciarSesion(form.email, form.password);
     if (result.ok) {
       recargar();
       router.push('/diagnostico');
@@ -50,38 +50,26 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="label">Correo electrónico</label>
-              <input
-                className="input-field"
-                type="email"
-                placeholder="ana@empresa.com"
-                value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                required
-                autoComplete="email"
-              />
+              <input className="input-field" type="email" placeholder="ana@empresa.com"
+                value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                required autoComplete="email" />
             </div>
             <div>
               <label className="label">Contraseña</label>
               <div className="relative">
-                <input
-                  className="input-field pr-10"
-                  type={showPass ? 'text' : 'password'}
+                <input className="input-field pr-10" type={showPass ? 'text' : 'password'}
                   placeholder="Tu contraseña"
-                  value={form.password}
-                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  required
-                  autoComplete="current-password"
-                />
-                <button type="button" onClick={() => setShowPass(s => !s)} className="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                  value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                  required autoComplete="current-password" />
+                <button type="button" onClick={() => setShowPass(s => !s)}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
                   {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl border border-red-100">
-                {error}
-              </div>
+              <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl border border-red-100">{error}</div>
             )}
 
             <button type="submit" disabled={loading} className="btn-primary w-full py-3">
@@ -92,17 +80,8 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           ¿No tienes cuenta?{' '}
-          <Link href="/registro" className="text-indigo-600 font-semibold hover:underline">
-            Regístrate gratis
-          </Link>
+          <Link href="/registro" className="text-indigo-600 font-semibold hover:underline">Regístrate gratis</Link>
         </p>
-
-        {/* Demo hint */}
-        <div className="mt-4 p-3 bg-indigo-50 rounded-xl text-center">
-          <p className="text-xs text-indigo-600">
-            <strong>Demo:</strong> Regístrate con cualquier correo para explorar la herramienta.
-          </p>
-        </div>
       </div>
     </div>
   );

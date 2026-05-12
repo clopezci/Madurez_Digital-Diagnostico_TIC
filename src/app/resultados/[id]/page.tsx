@@ -24,9 +24,10 @@ export default function ResultadosPage() {
   useEffect(() => {
     if (!loading && !usuario) { router.replace('/login'); return; }
     if (!loading && usuario) {
-      const r = getDiagnosticoPorId(id);
-      setResultado(r);
-      setCargando(false);
+      getDiagnosticoPorId(id).then(r => {
+        setResultado(r);
+        setCargando(false);
+      });
     }
   }, [loading, usuario, id, router]);
 

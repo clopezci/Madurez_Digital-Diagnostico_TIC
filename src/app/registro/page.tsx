@@ -18,7 +18,7 @@ export default function RegistroPage() {
     if (usuario) router.replace('/diagnostico');
   }, [usuario, router]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (form.nombre.trim().length < 2) return setError('Ingresa tu nombre completo.');
@@ -28,7 +28,7 @@ export default function RegistroPage() {
     if (!form.acepta) return setError('Debes aceptar el tratamiento de datos.');
 
     setLoading(true);
-    const result = registrarUsuario(form.nombre, form.email, form.password);
+    const result = await registrarUsuario(form.nombre, form.email, form.password);
     if (result.ok) {
       recargar();
       router.push('/diagnostico');
@@ -56,72 +56,44 @@ export default function RegistroPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="label">Nombre completo</label>
-              <input
-                className="input-field"
-                type="text"
-                placeholder="Ana García"
-                value={form.nombre}
-                onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
-                required
-              />
+              <input className="input-field" type="text" placeholder="Ana García"
+                value={form.nombre} onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))} required />
             </div>
             <div>
               <label className="label">Correo electrónico</label>
-              <input
-                className="input-field"
-                type="email"
-                placeholder="ana@empresa.com"
-                value={form.email}
-                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                required
-              />
+              <input className="input-field" type="email" placeholder="ana@empresa.com"
+                value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required />
             </div>
             <div>
               <label className="label">Contraseña</label>
               <div className="relative">
-                <input
-                  className="input-field pr-10"
-                  type={showPass ? 'text' : 'password'}
+                <input className="input-field pr-10" type={showPass ? 'text' : 'password'}
                   placeholder="Mínimo 6 caracteres"
-                  value={form.password}
-                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  required
-                />
-                <button type="button" onClick={() => setShowPass(s => !s)} className="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
+                  value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required />
+                <button type="button" onClick={() => setShowPass(s => !s)}
+                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600">
                   {showPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
             </div>
             <div>
               <label className="label">Confirmar contraseña</label>
-              <input
-                className="input-field"
-                type="password"
-                placeholder="Repite la contraseña"
-                value={form.confirmar}
-                onChange={e => setForm(f => ({ ...f, confirmar: e.target.value }))}
-                required
-              />
+              <input className="input-field" type="password" placeholder="Repite la contraseña"
+                value={form.confirmar} onChange={e => setForm(f => ({ ...f, confirmar: e.target.value }))} required />
             </div>
             <div className="flex items-start gap-3">
-              <input
-                type="checkbox"
-                id="acepta"
-                checked={form.acepta}
+              <input type="checkbox" id="acepta" checked={form.acepta}
                 onChange={e => setForm(f => ({ ...f, acepta: e.target.checked }))}
-                className="mt-0.5 w-4 h-4 text-indigo-600 rounded"
-              />
+                className="mt-0.5 w-4 h-4 text-indigo-600 rounded" />
               <label htmlFor="acepta" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
-                Acepto el tratamiento de mis datos personales de acuerdo con la{' '}
+                Acepto el tratamiento de mis datos según la{' '}
                 <Link href="/privacidad" className="text-indigo-600 hover:underline">Política de Privacidad</Link>{' '}
                 y la Ley 1581 de 2012 (Habeas Data Colombia).
               </label>
             </div>
 
             {error && (
-              <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl border border-red-100">
-                {error}
-              </div>
+              <div className="bg-red-50 text-red-700 text-sm px-4 py-3 rounded-xl border border-red-100">{error}</div>
             )}
 
             <button type="submit" disabled={loading} className="btn-primary w-full py-3">
@@ -132,9 +104,7 @@ export default function RegistroPage() {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           ¿Ya tienes cuenta?{' '}
-          <Link href="/login" className="text-indigo-600 font-semibold hover:underline">
-            Inicia sesión
-          </Link>
+          <Link href="/login" className="text-indigo-600 font-semibold hover:underline">Inicia sesión</Link>
         </p>
       </div>
     </div>
