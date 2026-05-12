@@ -2,7 +2,9 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { BarChart3, LogOut, History, ClipboardList } from 'lucide-react';
+import { BarChart3, LogOut, History, ClipboardList, ShieldCheck } from 'lucide-react';
+
+const ADMIN_EMAIL = 'clpezci@gmail.com';
 
 export default function Header() {
   const { usuario, logout } = useAuth();
@@ -39,6 +41,15 @@ export default function Header() {
               <History className="w-4 h-4" />
               <span className="hidden sm:inline">Historial</span>
             </Link>
+            {usuario.email === ADMIN_EMAIL && (
+              <Link
+                href="/admin"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm text-indigo-600 hover:bg-indigo-50 transition-colors"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span className="hidden sm:inline">Admin</span>
+              </Link>
+            )}
             <div className="w-px h-6 bg-gray-200 mx-1" />
             <span className="text-sm text-gray-500 hidden sm:block px-2">{usuario.nombre}</span>
             <button

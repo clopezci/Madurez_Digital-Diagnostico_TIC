@@ -214,6 +214,60 @@ export async function eliminarDiagnostico(id: string): Promise<void> {
   localStorage.setItem(LS.diagnosticos, JSON.stringify(todos));
 }
 
+// ─── ADMIN STATS ─────────────────────────────────────────────────────────────
+
+export interface AdminStats {
+  total_diagnosticos: number;
+  total_usuarios: number;
+  promedio_global: number;
+  niveles: Record<string, number>;
+  por_dimension: Record<string, number>;
+}
+
+export interface StatsSector  { sector: string;  total: number; promedio: number; }
+export interface StatsTamanio { tamanio: string; total: number; promedio: number; }
+export interface StatsMes     { mes: string;     total: number; promedio: number; }
+
+export async function getAdminStats(): Promise<AdminStats | null> {
+  if (!isSupabaseEnabled || !supabase) return null;
+  const { data, error } = await supabase.rpc('get_admin_stats');
+  if (error || !data) return null;
+  return data as AdminStats;
+}
+
+export async function getStatsPorSector(): Promise<StatsSector[]> {
+  if (!isSupabaseEnabled || !supabase) return [];
+  const { data, error } = await supabase.rpc('get_stats_por_sector');
+  if (error || !data) return [];
+  return (data as StatsSector[]).map(r => ({
+    sector:   String(r.sector),
+    total:    Number(r.total),
+    promedio: Number(r.promedio),
+  }));
+}
+
+export async function getStatsPorTamanio(): Promise<StatsTamanio[]> {
+  if (!isSupabaseEnabled || !supabase) return [];
+  const { data, error } = await supabase.rpc('get_stats_por_tamanio');
+  if (error || !data) return [];
+  return (data as StatsTamanio[]).map(r => ({
+    tamanio:  String(r.tamanio),
+    total:    Number(r.total),
+    promedio: Number(r.promedio),
+  }));
+}
+
+export async function getTendenciaMensual(): Promise<StatsMes[]> {
+  if (!isSupabaseEnabled || !supabase) return [];
+  const { data, error } = await supabase.rpc('get_tendencia_mensual');
+  if (error || !data) return [];
+  return (data as StatsMes[]).map(r => ({
+    mes:      String(r.mes),
+    total:    Number(r.total),
+    promedio: Number(r.promedio),
+  }));
+}
+
 // ─── BENCHMARK REAL ──────────────────────────────────────────────────────────
 
 export async function getBenchmarkReal(
