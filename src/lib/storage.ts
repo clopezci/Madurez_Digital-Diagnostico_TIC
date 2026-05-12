@@ -37,6 +37,8 @@ function mapRow(row: Record<string, unknown>): DiagnosticoResultado {
     recomendaciones:row.recomendaciones as DiagnosticoResultado['recomendaciones'],
     ruta90Dias:     row.ruta_90_dias   as DiagnosticoResultado['ruta90Dias'],
     benchmark:      row.benchmark      as DiagnosticoResultado['benchmark'],
+    tokenPublico:   row.token_publico  as string | undefined,
+    compartidoPublicamente: row.compartido_publicamente as boolean | undefined,
   };
 }
 
@@ -266,6 +268,67 @@ export async function getTendenciaMensual(): Promise<StatsMes[]> {
     total:    Number(r.total),
     promedio: Number(r.promedio),
   }));
+}
+
+// ─── LINK PÚBLICO ────────────────────────────────────────────────────────────
+
+export async function generarLinkPublico(id: string): Promise<string | null> {
+  const token = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+
+  if (isSupabaseEnabled && supabase) {
+    const { error } = await supabase
+      .from('diagnosticos')
+      .update({ token_publico: token, compartido_publicamente: true })
+      .eq('id', id);
+    if (error) return null;
+    return token;
+  }
+
+  if (!isBrowser()) return null;
+  const todos: DiagnosticoResultado[] =
+    JSON.parse(localStorage.getItem(LS.diagnosticos) ?? '[]');
+  const idx = todos.findIndex(d => d.id === id);
+  if (idx === -1) return null;
+  todos[idx] = { ...todos[idx], tokenPublico: token, compartidoPublicamente: true };
+  localStorage.setItem(LS.diagnosticos, JSON.stringify(todos));
+  return token;
+}
+
+export async function revocarLinkPublico(id: string): Promise<void> {
+  if (isSupabaseEnabled && supabase) {
+    await supabase
+      .from('diagnosticos')
+      .update({ token_publico: null, compartido_publicamente: false })
+      .eq('id', id);
+    return;
+  }
+
+  if (!isBrowser()) return;
+  const todos: DiagnosticoResultado[] =
+    JSON.parse(localStorage.getItem(LS.diagnosticos) ?? '[]');
+  const idx = todos.findIndex(d => d.id === id);
+  if (idx === -1) return;
+  todos[idx] = { ...todos[idx], tokenPublico: undefined, compartidoPublicamente: false };
+  localStorage.setItem(LS.diagnosticos, JSON.stringify(todos));
+}
+
+export async function getDiagnosticoPorToken(
+  token: string,
+): Promise<DiagnosticoResultado | null> {
+  if (isSupabaseEnabled && supabase) {
+    const { data, error } = await supabase
+      .from('diagnosticos_publicos')
+      .select('*')
+      .eq('token_publico', token)
+      .single();
+    if (error || !data) return null;
+    return mapRow(data as Record<string, unknown>);
+  }
+
+  if (!isBrowser()) return null;
+  const todos: DiagnosticoResultado[] =
+    JSON.parse(localStorage.getItem(LS.diagnosticos) ?? '[]');
+  return todos.find(d => d.tokenPublico === token && d.compartidoPublicamente) ?? null;
 }
 
 // ─── BENCHMARK REAL ──────────────────────────────────────────────────────────

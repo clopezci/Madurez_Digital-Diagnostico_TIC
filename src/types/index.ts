@@ -80,6 +80,8 @@ export interface DiagnosticoResultado {
   recomendaciones: RecomendacionItem[];
   ruta90Dias: Accion90Dias[];
   benchmark: BenchmarkDatos;
+  tokenPublico?: string;
+  compartidoPublicamente?: boolean;
 }
 
 // Usuario: ya no guarda passwordHash (Supabase Auth lo maneja)

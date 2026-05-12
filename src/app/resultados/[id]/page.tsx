@@ -13,6 +13,10 @@ import Recomendaciones from '@/components/dashboard/Recomendaciones';
 import Ruta90Dias from '@/components/dashboard/Ruta90Dias';
 import BenchmarkCard from '@/components/dashboard/BenchmarkCard';
 import CubiertaPDF from '@/components/dashboard/CubiertaPDF';
+import BadgeCompartible from '@/components/dashboard/BadgeCompartible';
+import CompartirLink from '@/components/dashboard/CompartirLink';
+import NivelObjetivo from '@/components/dashboard/NivelObjetivo';
+import Recordatorio90Dias from '@/components/dashboard/Recordatorio90Dias';
 import { Loader2, Printer, ClipboardList, ArrowLeft, Building2 } from 'lucide-react';
 
 export default function ResultadosPage() {
@@ -132,9 +136,10 @@ export default function ResultadosPage() {
           <BarraDimensiones resultado={resultado} />
         </div>
 
-        {/* Benchmark */}
-        <div className="mb-6">
+        {/* Benchmark + Nivel objetivo */}
+        <div className="grid lg:grid-cols-2 gap-6 mb-6">
           <BenchmarkCard resultado={resultado} />
+          <NivelObjetivo resultado={resultado} />
         </div>
 
         {/* Recommendations */}
@@ -145,6 +150,17 @@ export default function ResultadosPage() {
         {/* 90-day plan */}
         <div className="mb-6">
           <Ruta90Dias acciones={resultado.ruta90Dias} />
+        </div>
+
+        {/* Recordatorio 90 días */}
+        <div className="mb-6 no-print">
+          <Recordatorio90Dias resultado={resultado} />
+        </div>
+
+        {/* Share + badge */}
+        <div className="grid sm:grid-cols-2 gap-6 mb-6 no-print">
+          <CompartirLink resultado={resultado} />
+          <BadgeCompartible resultado={resultado} />
         </div>
 
         {/* Legal footer */}

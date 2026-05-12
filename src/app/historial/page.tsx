@@ -9,8 +9,109 @@ import type { DiagnosticoResultado } from '@/types';
 import Header from '@/components/layout/Header';
 import {
   Building2, Calendar, ChevronRight, ClipboardList,
-  Loader2, Trash2, GitCompareArrows, X, CheckSquare,
+  Loader2, Trash2, GitCompareArrows, X, CheckSquare, TrendingUp,
 } from 'lucide-react';
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, ReferenceLine, Dot,
+} from 'recharts';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function CustomDot(props: any) {
+  const { cx, cy, payload } = props;
+  const color = NIVEL_COLORES[payload.nivel as keyof typeof NIVEL_COLORES] ?? '#6366f1';
+  return <circle cx={cx} cy={cy} r={5} fill={color} stroke="white" strokeWidth={2} />;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function CustomTooltip({ active, payload }: any) {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  const color = NIVEL_COLORES[d.nivel as keyof typeof NIVEL_COLORES] ?? '#6366f1';
+  return (
+    <div className="bg-white border border-gray-200 rounded-xl shadow-lg px-3 py-2 text-xs">
+      <p className="font-semibold text-gray-800 mb-0.5">{d.empresa}</p>
+      <p className="text-gray-500 mb-1">{d.fecha}</p>
+      <div className="flex items-center gap-1.5">
+        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+        <span className="font-bold text-gray-900">{d.puntaje}</span>
+        <span style={{ color }} className="font-medium">{d.nivel}</span>
+      </div>
+    </div>
+  );
+}
+
+function ProgresoChart({ diagnosticos }: { diagnosticos: DiagnosticoResultado[] }) {
+  const ordenados = [...diagnosticos].sort(
+    (a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime()
+  );
+
+  const data = ordenados.map((d, i) => ({
+    index: i + 1,
+    puntaje: d.puntajeGlobal,
+    nivel: d.nivelGlobal,
+    empresa: d.empresa.nombre,
+    fecha: formatFechaCorta(d.fecha),
+  }));
+
+  const min = Math.min(...data.map(d => d.puntaje));
+  const max = Math.max(...data.map(d => d.puntaje));
+  const delta = max - min;
+  const mejoro = data[data.length - 1].puntaje > data[0].puntaje;
+  const empato = data[data.length - 1].puntaje === data[0].puntaje;
+
+  return (
+    <div className="card mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-indigo-600" />
+          <h2 className="font-bold text-gray-900">Evolución de tu puntaje</h2>
+        </div>
+        <span className={cn(
+          'text-xs font-semibold px-2.5 py-1 rounded-full',
+          empato ? 'bg-gray-100 text-gray-600'
+          : mejoro ? 'bg-emerald-100 text-emerald-700'
+          : 'bg-red-100 text-red-700'
+        )}>
+          {empato ? 'Sin cambio' : mejoro ? `+${delta} pts` : `-${delta} pts`}
+        </span>
+      </div>
+      <ResponsiveContainer width="100%" height={160}>
+        <LineChart data={data} margin={{ top: 8, right: 16, left: -20, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+          <XAxis
+            dataKey="index"
+            tick={{ fontSize: 11, fill: '#94a3b8' }}
+            tickFormatter={v => `#${v}`}
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            domain={[Math.max(0, min - 10), Math.min(100, max + 10)]}
+            tick={{ fontSize: 11, fill: '#94a3b8' }}
+            axisLine={false}
+            tickLine={false}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <ReferenceLine y={50} stroke="#e2e8f0" strokeDasharray="4 4" />
+          <Line
+            type="monotone"
+            dataKey="puntaje"
+            stroke="#6366f1"
+            strokeWidth={2.5}
+            dot={<CustomDot />}
+            activeDot={{ r: 7, fill: '#6366f1', stroke: 'white', strokeWidth: 2 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+      <p className="text-xs text-gray-400 mt-2 text-center">
+        {diagnosticos.length} diagnóstico{diagnosticos.length !== 1 ? 's' : ''} registrado{diagnosticos.length !== 1 ? 's' : ''}
+        {mejoro && ` · Mejoraste ${delta} puntos desde el primero`}
+        {!mejoro && !empato && ` · Bajaste ${delta} puntos desde el primero`}
+      </p>
+    </div>
+  );
+}
 
 export default function HistorialPage() {
   const { usuario, loading } = useAuth();
@@ -124,6 +225,11 @@ export default function HistorialPage() {
               </button>
             )}
           </div>
+        )}
+
+        {/* Progreso visual — solo con 2+ diagnósticos */}
+        {diagnosticos.length >= 2 && !modoComparar && (
+          <ProgresoChart diagnosticos={diagnosticos} />
         )}
 
         {diagnosticos.length === 0 ? (
