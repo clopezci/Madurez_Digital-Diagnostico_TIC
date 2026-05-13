@@ -8,55 +8,64 @@ const CRON_SECRET = process.env.CRON_SECRET ?? '';
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://madurez-digital-diagnostico-tic.vercel.app';
 
 export async function GET(req: NextRequest) {
-  // Protect cron endpoint
   const auth = req.headers.get('authorization');
   if (CRON_SECRET && auth !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  if (!supabaseUrl || !supabaseServiceKey || !resendApiKey) {
-    return NextResponse.json({ error: 'Not configured' }, { status: 503 });
+  const missing = [
+    !supabaseUrl       && 'NEXT_PUBLIC_SUPABASE_URL',
+    !supabaseServiceKey && 'SUPABASE_SERVICE_ROLE_KEY',
+    !resendApiKey      && 'RESEND_API_KEY',
+  ].filter(Boolean);
+  if (missing.length) {
+    return NextResponse.json({ error: 'Not configured', missing }, { status: 503 });
   }
 
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
-  const ahora = new Date().toISOString();
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const ahora = new Date().toISOString();
 
-  const { data: pendientes, error } = await supabase
-    .from('recordatorios_90dias')
-    .select('*')
-    .eq('enviado', false)
-    .lte('fecha_recordatorio', ahora)
-    .limit(50);
+    const { data: pendientes, error } = await supabase
+      .from('recordatorios_90dias')
+      .select('*')
+      .eq('enviado', false)
+      .lte('fecha_recordatorio', ahora)
+      .limit(50);
 
-  if (error || !pendientes) {
-    return NextResponse.json({ error: error?.message ?? 'Query failed' }, { status: 500 });
-  }
-
-  let enviados = 0;
-
-  for (const r of pendientes) {
-    const html = buildEmail(r, BASE_URL);
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendApiKey}` },
-      body: JSON.stringify({
-        from: 'DiagnosticoTIC <noreply@madurez-digital-diagnostico-tic.vercel.app>',
-        to: [r.email],
-        subject: `¡Han pasado 90 días! ¿Cómo va tu transformación digital, ${r.nombre?.split(' ')[0] ?? ''}?`,
-        html,
-      }),
-    });
-
-    if (res.ok) {
-      await supabase
-        .from('recordatorios_90dias')
-        .update({ enviado: true, fecha_envio: new Date().toISOString() })
-        .eq('id', r.id);
-      enviados++;
+    if (error || !pendientes) {
+      return NextResponse.json({ error: error?.message ?? 'Query failed' }, { status: 500 });
     }
-  }
 
-  return NextResponse.json({ ok: true, enviados, total: pendientes.length });
+    let enviados = 0;
+
+    for (const r of pendientes) {
+      const html = buildEmail(r, BASE_URL);
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendApiKey}` },
+        body: JSON.stringify({
+          from: 'DiagnosticoTIC <noreply@madurez-digital-diagnostico-tic.vercel.app>',
+          to: [r.email],
+          subject: `¡Han pasado 90 días! ¿Cómo va tu transformación digital, ${r.nombre?.split(' ')[0] ?? ''}?`,
+          html,
+        }),
+      });
+
+      if (res.ok) {
+        await supabase
+          .from('recordatorios_90dias')
+          .update({ enviado: true, fecha_envio: new Date().toISOString() })
+          .eq('id', r.id);
+        enviados++;
+      }
+    }
+
+    return NextResponse.json({ ok: true, enviados, total: pendientes.length });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 }
 
 function buildEmail(r: Record<string, unknown>, baseUrl: string): string {
