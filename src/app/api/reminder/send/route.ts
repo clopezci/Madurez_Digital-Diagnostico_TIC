@@ -26,9 +26,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY ?? '';
-  const resendApiKey = process.env.RESEND_API_KEY ?? '';
+  // Trim to remove accidental whitespace/newlines from copy-paste in Vercel
+  const supabaseUrl = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').trim();
+  const supabaseServiceKey = (process.env.SUPABASE_SERVICE_ROLE_KEY ?? '').trim();
+  const resendApiKey = (process.env.RESEND_API_KEY ?? '').trim();
 
   const missing = [
     !supabaseUrl        && 'NEXT_PUBLIC_SUPABASE_URL',
@@ -37,6 +38,25 @@ export async function GET(req: NextRequest) {
   ].filter(Boolean);
   if (missing.length) {
     return NextResponse.json({ error: 'Not configured', missing }, { status: 503 });
+  }
+
+  // Quick connectivity test before the real query
+  try {
+    const ping = await fetch(`${supabaseUrl}/rest/v1/`, {
+      method: 'HEAD',
+      cache: 'no-store',
+      headers: { apikey: supabaseServiceKey },
+    });
+    if (!ping.ok && ping.status !== 401) {
+      return NextResponse.json({ error: `Supabase unreachable: HTTP ${ping.status}`, url: supabaseUrl }, { status: 502 });
+    }
+  } catch (pingErr) {
+    return NextResponse.json({
+      error: 'Supabase unreachable',
+      url: supabaseUrl,
+      urlLen: supabaseUrl.length,
+      cause: String((pingErr as { cause?: unknown })?.cause ?? pingErr),
+    }, { status: 502 });
   }
 
   const restBase = `${supabaseUrl}/rest/v1`;
