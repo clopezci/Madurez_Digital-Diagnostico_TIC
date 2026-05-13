@@ -23,6 +23,13 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // Diagnostic: verify env vars are loaded correctly at runtime
+    const debug = {
+      supabaseUrl: supabaseUrl ? supabaseUrl.slice(0, 30) + '...' : 'EMPTY',
+      serviceKeyLen: supabaseServiceKey.length,
+      resendKeyLen: resendApiKey.length,
+    };
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const ahora = new Date().toISOString();
 
@@ -34,7 +41,7 @@ export async function GET(req: NextRequest) {
       .limit(50);
 
     if (error || !pendientes) {
-      return NextResponse.json({ error: error?.message ?? 'Query failed' }, { status: 500 });
+      return NextResponse.json({ error: error?.message ?? 'Query failed', debug }, { status: 500 });
     }
 
     let enviados = 0;
@@ -64,7 +71,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, enviados, total: pendientes.length });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    const stack = e instanceof Error ? e.stack?.split('\n')[1]?.trim() : undefined;
+    return NextResponse.json({
+      error: msg,
+      stack,
+      vars: {
+        supabaseUrl: supabaseUrl ? supabaseUrl.slice(0, 30) + '...' : 'EMPTY',
+        serviceKeyLen: supabaseServiceKey.length,
+        resendKeyLen: resendApiKey.length,
+      }
+    }, { status: 500 });
   }
 }
 
